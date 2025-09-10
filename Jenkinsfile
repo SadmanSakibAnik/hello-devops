@@ -1,8 +1,8 @@
 pipeline {
     agent any
     environment {
-        IMAGE_NAME = "ssanik121/todo-mysql"
-        IMAGE_TAG = "${BUILD_NUMBER}"
+        IMAGE_NAME = "ssanik/hello-devops"
+        IMAGE_TAG = "${BUILD_NUMBER}" 
         FULL_IMAGE = "${IMAGE_NAME}:${IMAGE_TAG}"
 
         SSH_CREDENTIALS = 'deploy-server-ssh'
@@ -13,13 +13,13 @@ pipeline {
         stage('Git pull') {
             steps {
                 git branch: 'main',
-                    url: 'https://github.com/SadmanSakibAnik/todo-mysql.git'
+                    url: 'https://github.com/SadmanSakibAnik/hello-devops.git'
             }
         }
         stage('Prepare Dockerfile') {
             steps {
-                // Copy your Dockerfile from /opt/myapp
-                sh "cp /opt/myapp/Dockerfile ."
+                // Copy Dockerfile from /opt to workspace
+                sh "cp /opt/Dockerfile ."
             }
         }
         stage('Build docker image') {
@@ -42,25 +42,9 @@ pipeline {
         stage('Deploy on Remote Server') {
             steps {
                 sshagent(credentials: [SSH_CREDENTIALS]) {
-                    // Pull new image
                     sh "ssh -o StrictHostKeyChecking=no vagrant@${REMOTE_SERVER_IP} 'docker pull ${FULL_IMAGE}'"
-
-                    // Stop old container if exists
-                    sh "ssh -o StrictHostKeyChecking=no vagrant@${REMOTE_SERVER_IP} 'docker rm -f 101-app || true'"
-
-                    // Run new container with MySQL env
-                    sh '''
-                    ssh -o StrictHostKeyChecking=no vagrant@${REMOTE_SERVER_IP} "
-                        docker run -d -p 3000:3000 \
-                        --name 101-app \
-                        --restart always \
-                        -e MYSQL_HOST=192.168.56.11 \
-                        -e MYSQL_USER=root \
-                        -e MYSQL_PASSWORD=rootpass \
-                        -e MYSQL_DB=101_db \
-                        ${FULL_IMAGE}
-                    "
-                    '''
+                    sh "ssh -o StrictHostKeyChecking=no vagrant@${REMOTE_SERVER_IP} 'docker rm -f hello-devops || true'"
+                    sh "ssh -o StrictHostKeyChecking=no vagrant@${REMOTE_SERVER_IP} 'docker run -d -p 3000:3000 --name hello-devops --restart always ${FULL_IMAGE}'"
                 }
             }
         }
