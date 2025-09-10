@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        IMAGE_NAME = "ssanik/hello-devops"
+        IMAGE_NAME = "ssanik121/hello-devops"
         IMAGE_TAG = "${BUILD_NUMBER}" 
         FULL_IMAGE = "${IMAGE_NAME}:${IMAGE_TAG}"
 
@@ -19,7 +19,7 @@ pipeline {
         stage('Prepare Dockerfile') {
             steps {
                 // Copy Dockerfile from /opt to workspace
-                sh "cp /opt/Dockerfile ."
+                sh "cp /opt/myapp/Dockerfile ."
             }
         }
         stage('Build docker image') {
