@@ -8,12 +8,20 @@ pipeline {
         SSH_CREDENTIALS = 'deploy-server-ssh'
         REMOTE_SERVER_IP = '192.168.56.11'
         DOCKER_HUB_CREDENTIALS = 'docker-hub-creds'
+        SONAR_HOME = tool "Sonar"
     }
     stages {
         stage('Git pull') {
             steps {
                 git branch: 'main',
                     url: 'https://github.com/SadmanSakibAnik/hello-devops.git'
+            }
+        }
+        stage('SonarQube Analysis ') {
+            steps {
+                withSonarQubeEnv('Sonar') {
+                   sh "$SONAR_HOME/bin/sonar-scanner -Dsonar.projectName=hello-devops -Dsonar.projectKey=hello-devops"
+                }
             }
         }
         stage('Prepare Dockerfile') {
